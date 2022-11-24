@@ -17,6 +17,22 @@ const uri = `mongodb+srv://${process.env.MH_FASHION_USER}:${process.env.MH_FASHI
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 
+async function run() {
+    try {
+      const categoryCollections = client.db('mhFashion').collection('categories');
+
+      app.get('/categories', async(req, res)=>{
+        const query = {};
+        const categories = await categoryCollections.find(query).toArray();
+        res.send(categories) 
+      })
+    } 
+    finally {
+
+    }
+  }
+  run().catch(console.dir);
+
 
 app.get('/', async (req, res) => {
     res.send('mh fashion server is running');
