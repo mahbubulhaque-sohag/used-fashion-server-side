@@ -21,6 +21,7 @@ async function run() {
     try {
       const categoryCollections = client.db('mhFashion').collection('categories');
       const userCollections = client.db('mhFashion').collection('users');
+      const productCollections = client.db('mhFashion').collection('products');
 
       app.get('/categories', async(req, res)=>{
         const query = {};
@@ -32,6 +33,18 @@ async function run() {
         const user = req.body;
         const result = await userCollections.insertOne(user);
         res.send(result)
+      })
+   
+      app.post('/products', async(req, res)=>{
+        const product = req.body;
+        const result = await productCollections.insertOne(product);
+        res.send(result)
+      })
+
+      app.get('/products', async(req, res)=>{
+        const query = {};
+        const products = await productCollections.find(query).toArray();
+        res.send(products)
       })
     } 
     finally {
