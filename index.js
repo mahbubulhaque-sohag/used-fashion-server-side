@@ -22,6 +22,7 @@ async function run() {
       const categoryCollections = client.db('mhFashion').collection('categories');
       const userCollections = client.db('mhFashion').collection('users');
       const productCollections = client.db('mhFashion').collection('products');
+      const advertismentCollections = client.db('mhFashion').collection('advertisments');
 
       app.get('/categories', async(req, res)=>{
         const query = {};
@@ -38,6 +39,12 @@ async function run() {
       app.post('/products', async(req, res)=>{
         const product = req.body;
         const result = await productCollections.insertOne(product);
+        res.send(result)
+      })
+
+      app.post('/advertisment', async(req, res)=>{
+        const advertisment = req.body;
+        const result = await advertismentCollections.insertOne(advertisment);
         res.send(result)
       })
 
