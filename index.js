@@ -16,6 +16,26 @@ app.use(express.json());
 const uri = `mongodb+srv://${process.env.MH_FASHION_USER}:${process.env.MH_FASHION_PASS}@cluster0.lezxbrx.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
+function verfyJWT(req, res, next){
+  const authHeader = req.headers.authorization;
+  if(!authHeader){
+    return res.status(401).send('unauthorized access')
+  }
+  
+  const token = authHeader.split(' ')[1];
+  console.log('inside', token)
+
+  jwt.verify(token, process.env.ACCESS_TOKEN, function(err, decoded){
+      if(err){
+        return res.status(403).send({message:'forbidden access'})
+      }
+
+      req.decoded = decoded;
+      next()
+  })
+
+} 
+
 
 async function run() {
     try {
@@ -47,6 +67,12 @@ async function run() {
         const result = await userCollections.insertOne(user);
         res.send(result)
       })
+
+      app.get('/users', async(req, res)=>{
+        const query = {}
+        const users = await userCollections.find(query).toArray();
+        res.send(users)
+      })
    
       app.post('/products', async(req, res)=>{
         const product = req.body;
@@ -64,15 +90,21 @@ async function run() {
         const categoryName = req.params.name;
         // console.log(categoryName)
         const query = {category:categoryName};
-        console.log(query)
+        // console.log(query)
         const products = await productCollections.find(query).toArray();
         res.send(products)
       })
 
-      app.get('/myproducts/:email', async(req, res)=>{
+      app.get('/myproducts/:email', verfyJWT, async(req, res)=>{
         const userEmail = req.params.email;
+       const decodedEmail = req.decoded.email;
+
+       if(userEmail !== decodedEmail){
+        return res.status(403).send({message:'forbidden access'})
+       }
+
         const query = { sellerEmail : userEmail}
-        console.log(userEmail)
+        // console.log(userEmail)
 
         const products = await productCollections.find(query).toArray();
         res.send(products) 
