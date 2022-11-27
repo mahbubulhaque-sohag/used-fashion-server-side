@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const port = process.env.PORT || 5000;
@@ -72,6 +72,33 @@ async function run() {
         const query = {}
         const users = await userCollections.find(query).toArray();
         res.send(users)
+      })
+
+      app.get('/sellers',async(req, res)=>{
+        const query = {account : 'seller'};
+        const sellers = await userCollections.find(query).toArray();
+        res.send(sellers)
+      })
+
+      app.put('/sellers/verify/:id', async(req, res)=>{
+        const id = req.params.id;
+        const filter = {_id: ObjectId(id)};
+        const options = { upsert : true};
+        const updatedDoc = {
+          $set: {
+            status : 'verified',
+            symbol : '✔'
+          }
+        }
+        const result = await userCollections.updateOne(filter, updatedDoc, options)
+        res.send(result)
+      })
+
+      app.delete('/sellers/delete/:id', async(req, res)=>{
+        const id = req.params.id;
+        const query = {_id: ObjectId(id)};
+        const result = await userCollections.deleteOne(query);
+        res.send(result);
       })
    
       app.post('/products', async(req, res)=>{
