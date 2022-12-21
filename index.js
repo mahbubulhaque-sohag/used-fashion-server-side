@@ -45,6 +45,7 @@ async function run() {
     const productCollections = client.db('mhFashion').collection('products');
     const advertismentCollections = client.db('mhFashion').collection('advertisments');
     const bookingCollections = client.db('mhFashion').collection('bookings');
+    const paymentCollections = client.db('mhFashion').collection('payments');
 
     app.get('/categories', async (req, res) => {
       const query = {};
@@ -232,11 +233,26 @@ async function run() {
           "card"
         ]
       });
-      console.log(paymentIntent)
+      // console.log(paymentIntent)
       res.send({
-        clientSecret: paymentIntent.client_secret,
+        clientSecret: paymentIntent.client_secret
       });
     });
+
+    app.post('/payments', async(req, res)=>{
+      const payment =req.body;
+      const result = await paymentCollections.insertOne(payment);
+      const id = payment.bookingId;
+      const filter = {_id: ObjectId(id)}
+      const updateDoc = {
+        $set:{
+          paid: true,
+          transactionId: payment.transactionId
+        }
+      }
+      const updateResult = await bookingCollections.updateOne(filter, updateDoc)
+      res.send(result);
+    } )
 
   }
   finally {
